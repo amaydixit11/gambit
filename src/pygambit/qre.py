@@ -317,12 +317,14 @@ def logit_estimate(
         SSRN working paper 4425515.
     """
     if isinstance(data, libgbt.MixedStrategyProfile):
+        data = data.astype(float)
         if use_empirical:
             return _estimate_strategy_empirical(data)
         else:
             return _estimate_strategy_fixedpoint(data, local_max=local_max,
                                                  first_step=first_step, max_accel=max_accel)
     elif isinstance(data, libgbt.MixedBehaviorProfile):
+        data = data.astype(float)
         if use_empirical:
             return _estimate_behavior_empirical(data)
         else:

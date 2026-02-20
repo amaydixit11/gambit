@@ -1080,3 +1080,44 @@ def test_profile_order_consistency(game: gbt.Game,
                                    objects_to_test: typing.Callable):
     _get_and_check_answers(game, action_probs1, action_probs2, rational_flag, func_to_test,
                            objects_to_test(game))
+
+
+def test_astype_float():
+    """Test astype(float) converts rational strategy profiles to float profiles."""
+    game = games.create_stripped_down_poker_efg()
+    profile = game.mixed_strategy_profile(rational=True)
+    profile["Alice"] = [gbt.Rational("1/4")] * 4
+    profile["Bob"] = [gbt.Rational("1/2")] * 2
+
+    double_profile = profile.astype(float)
+    assert isinstance(double_profile, gbt.MixedStrategyProfile)
+    assert not isinstance(double_profile, gbt.MixedStrategyProfileRational)
+    assert double_profile["Alice"]["11"] == 0.25
+    assert double_profile["Bob"]["1"] == 0.5
+
+
+def test_astype_rational():
+    """Test astype(gbt.Rational) converts float strategy profiles to rational profiles."""
+    game = games.create_stripped_down_poker_efg()
+    profile = game.mixed_strategy_profile(rational=False)
+    profile["Alice"] = [0.25, 0.25, 0.25, 0.25]
+    profile["Bob"] = [0.5, 0.5]
+
+    rational_profile = profile.astype(gbt.Rational)
+    assert isinstance(rational_profile, gbt.MixedStrategyProfileRational)
+    assert rational_profile["Alice"]["11"] == gbt.Rational("1/4")
+    assert rational_profile["Bob"]["1"] == gbt.Rational("1/2")
+
+
+def test_astype_identity():
+    """Test astype() returns an identical profile if the requested type
+    matches the profile precision."""
+    game = games.create_stripped_down_poker_efg()
+    profile = game.mixed_strategy_profile(rational=True)
+    profile["Alice"] = [gbt.Rational("1/4")] * 4
+    profile["Bob"] = [gbt.Rational("1/2")] * 2
+
+    rational_profile = profile.astype(gbt.Rational)
+    assert isinstance(rational_profile, gbt.MixedStrategyProfileRational)
+    assert rational_profile == profile
+    assert rational_profile is not profile
